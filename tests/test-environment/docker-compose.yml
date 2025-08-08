@@ -1,0 +1,47 @@
+---
+services:
+  data-downloader-test-env-azurite:
+    image: mcr.microsoft.com/azure-storage/azurite
+    ports:
+      - 14000:14000
+      - 14001:14001
+      - 14002:14002
+    command: |
+      azurite --blobHost 0.0.0.0 --blobPort 14000 --queueHost 0.0.0.0 \
+              --queuePort 14001 --tableHost 0.0.0.0 --tablePort 14002 \
+              --location /data --loose --skipApiVersionCheck
+    tmpfs:
+      - /data
+    healthcheck:
+      test: nc 127.0.0.1 14000 -z
+      interval: 5s
+      retries: 1
+
+  data-downloader-test-env-mockoon:
+    image: mockoon/cli:9.1.0
+    ports:
+      - 3005:3005
+    volumes:
+      - type: bind
+        source: mockoon-server-config.json
+        target: /server-config.json
+      - type: bind
+        source: ../artefacts
+        target: /tests/artefacts
+        read_only: true
+    command: ["--data", "server-config.json", "-p", "3005"]
+    healthcheck:
+      test: |
+        curl -s -o /dev/null 'http://localhost:3005/data/mockoon_health_check'
+      interval: 5s
+      timeout: 5s
+      retries: 1
+
+  all-services-running:
+    image: alpine
+    entrypoint: ["tail", "-f", "/dev/null"]
+    depends_on:
+      data-downloader-test-env-azurite:
+        condition: service_healthy
+      data-downloader-test-env-mockoon:
+        condition: service_healthy

@@ -1,0 +1,62 @@
+[project]
+name = "iati-data-downloader"
+version = "0.0.1"
+requires-python = ">= 3.13"
+readme = "README.md"
+dependencies = [
+    "azure-functions",
+    "azure-storage-blob",
+    "certifi",
+    "chardet",
+    "requests",
+    "toml",
+]
+
+[project.optional-dependencies]
+dev = [
+    "black",
+    "dotenv",
+    "isort",
+    "flake8",
+    "flake8-pyproject",
+    "pytest",
+    "pytest-watcher",
+    "mypy",
+    "types-requests",
+    "types-toml",
+]
+
+[tool.pip-tools]
+strip-extras = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests/unit", "tests/integration"]
+addopts = [
+    "--import-mode=importlib"
+]
+pythonpath = [
+  ".", "tests"
+]
+
+[tool.isort]
+py_version=312
+extend_skip = ['__pycache__', '.mypy_cache', '.pytest_cache', '.ve', '.venv']
+skip_gitignore = true
+src_paths = ['.', 'tests']
+line_length = 119
+profile = "black"
+
+[tool.mypy]
+files=["./"]
+mypy_path=["tests/"]
+
+[tool.flake8]
+max-line-length = 119
+extend_ignore = ['E203', 'W503', 'E275']
+exclude = ['__pycache__', '.mypy_cache', '.pytest_cache', '.ve', '.venv']
+max_complexity = 7
+
+[tool.black]
+line-length = 119
+target-version = ['py312']
+include='\.pyi?$'
